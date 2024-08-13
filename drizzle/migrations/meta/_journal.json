@@ -15,6 +15,20 @@
       "when": 1723582243278,
       "tag": "0001_puzzling_madripoor",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1723584870474,
+      "tag": "0002_heavy_steve_rogers",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1723585167823,
+      "tag": "0003_brainy_sway",
+      "breakpoints": true
     }
   ]
 }
