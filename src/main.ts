@@ -17,7 +17,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const status = exception.getStatus();
     response.status(status).json({
-      status: 'fail',
+      status: status >= 500 ? 'error' : 'fail',
       message: exception.message,
       data: null,
     });
@@ -35,7 +35,11 @@ async function main() {
         const message =
           errors[0].constraints?.[Object.keys(errors[0].constraints)[0]] ||
           'Bad request';
-        return new BadRequestException({ status: 'fail', message, data: null });
+        return new BadRequestException({
+          status: 'fail',
+          message,
+          data: null,
+        });
       },
     }),
   );

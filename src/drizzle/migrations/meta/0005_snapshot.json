@@ -1,6 +1,6 @@
 {
-  "id": "b99b50a8-9afc-4842-949b-e3db056487b2",
-  "prevId": "edf687ff-d54d-4520-8d6d-cb7278d05685",
+  "id": "50a3fe4a-fea1-4423-932f-b3c8db72b2aa",
+  "prevId": "5a27a6c6-f68c-4ae4-a89d-64d32cc72694",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -47,7 +47,7 @@
         },
         "times": {
           "name": "times",
-          "type": "timestamp[]",
+          "type": "time[]",
           "primaryKey": false,
           "notNull": true
         },
@@ -59,12 +59,12 @@
           "notNull": false,
           "default": "'private'"
         },
-        "private": {
-          "name": "private",
+        "published": {
+          "name": "published",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
-          "default": true
+          "default": false
         },
         "created_at": {
           "name": "created_at",
@@ -116,7 +116,7 @@
           "name": "published_index",
           "columns": [
             {
-              "expression": "private",
+              "expression": "published",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -220,12 +220,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "username": {
-          "name": "username",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
         "first_name": {
           "name": "first_name",
           "type": "varchar",
@@ -296,13 +290,6 @@
           "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
-        },
-        "users_username_unique": {
-          "name": "users_username_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "username"
           ]
         }
       }

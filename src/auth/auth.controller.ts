@@ -9,6 +9,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { SignupDto } from './dto/signup.dto';
 import { UserService } from '@/user/user.service';
+import { success } from '@/utils';
 
 @Controller('auth')
 export class AuthController {
@@ -18,15 +19,19 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto) {
-    const { email } = loginDto;
+  async login(@Body() dto: LoginDto) {
+    const { email } = dto;
     if (!(await this.userService.findByEmail(email)))
       throw new HttpException('User does not exist', HttpStatus.NOT_FOUND);
-    return this.authService.login(loginDto);
+    return this.authService.login(dto);
   }
 
   @Post('signup')
-  signup(@Body() signupDto: SignupDto) {
-    return this.authService.signup(signupDto);
+  async signup(@Body() dto: SignupDto) {
+    const { email } = dto;
+    if (await this.userService.findByEmail(email))
+      throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
+    const data = await this.authService.signup(dto);
+    return success(data, 'User created successfully');
   }
 }

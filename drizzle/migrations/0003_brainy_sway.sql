@@ -1,1 +1,0 @@
-ALTER TABLE "events" ALTER COLUMN "times" SET DATA TYPE time[];
