@@ -10,12 +10,13 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 
-@Catch(HttpException)
-export class HttpExceptionFilter implements ExceptionFilter {
-  catch(exception: HttpException, host: ArgumentsHost) {
+@Catch()
+export class AppExceptionFilter implements ExceptionFilter {
+  catch(exception: HttpException | Error, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const status = exception.getStatus();
+    const status =
+      exception instanceof HttpException ? exception.getStatus() : 500;
     response.status(status).json({
       status: status >= 500 ? 'error' : 'fail',
       message: exception.message,
@@ -43,7 +44,7 @@ async function main() {
       },
     }),
   );
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new AppExceptionFilter());
   await app.listen(8080);
 }
 main();

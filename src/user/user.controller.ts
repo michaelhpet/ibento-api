@@ -1,27 +1,23 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
-  Param,
   Delete,
   Query,
+  Req,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationDto } from '@/utils/pagination.dto';
 import { success } from '@/utils';
+import { Request } from 'express';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
-    return await this.userService.create(createUserDto);
-  }
 
   @Get()
   async findAll(@Query() paginationDto: PaginationDto) {
@@ -29,18 +25,27 @@ export class UserController {
     return success(data, 'Users fetched successfully');
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @Get('me')
+  async findOne(@Req() req: Request) {
+    const data = await this.userService.findOne(req.user.id);
+    if (!data)
+      throw new HttpException('User does not exist', HttpStatus.NOT_FOUND);
+    return success(data, 'User fetched successfully');
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  @Patch('me')
+  async update(@Req() req: Request, @Body() updateUserDto: UpdateUserDto) {
+    const data = await this.userService.update(req.user.id, updateUserDto);
+    if (!data)
+      throw new HttpException('User does not exist', HttpStatus.NOT_FOUND);
+    return success(data, 'User updated successfully');
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @Delete('me')
+  async remove(@Req() req: Request) {
+    const data = await this.userService.delete(req.user.id);
+    if (!data)
+      throw new HttpException('User does not exist', HttpStatus.NOT_FOUND);
+    return success(data, 'User deleted successfully');
   }
 }

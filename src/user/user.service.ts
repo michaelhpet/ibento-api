@@ -10,17 +10,25 @@ import { getPagination } from '@/utils';
 
 @Injectable()
 export class UserService {
+  fields = {
+    id: schema.users.id,
+    first_name: schema.users.first_name,
+    last_name: schema.users.last_name,
+    display_name: schema.users.display_name,
+    avatar_url: schema.users.avatar_url,
+    created_at: schema.users.created_at,
+    updated_at: schema.users.updated_at,
+  };
+
   constructor(
     @Inject(DB_CONNECTION) private db: PostgresJsDatabase<typeof schema>,
   ) {}
 
   async create(dto: CreateUserDto) {
-    const data = await this.db.insert(schema.users).values(dto).returning({
-      id: schema.users.id,
-      email: schema.users.email,
-      first_name: schema.users.first_name,
-      last_name: schema.users.last_name,
-    });
+    const data = await this.db
+      .insert(schema.users)
+      .values(dto)
+      .returning(this.fields);
     return { user: data[0] };
   }
 
@@ -28,12 +36,7 @@ export class UserService {
     const { limit = 10, page = 1 } = paginationDto;
     const offset = (page - 1) * limit;
     const users = await this.db
-      .select({
-        id: schema.users.id,
-        email: schema.users.email,
-        first_name: schema.users.first_name,
-        last_name: schema.users.last_name,
-      })
+      .select(this.fields)
       .from(schema.users)
       .limit(limit)
       .offset(offset);
@@ -44,24 +47,40 @@ export class UserService {
     return { users, pagination };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    const users = await this.db
+      .select(this.fields)
+      .from(schema.users)
+      .where(eq(schema.users.id, id));
+    if (!users.length) return null;
+    return { user: users[0] };
   }
 
   async findByEmail(email: string) {
-    const _users = await this.db
+    const users = await this.db
       .select()
       .from(schema.users)
       .where(eq(schema.users.email, email));
-    if (!_users.length) return null;
-    return _users[0];
+    if (!users.length) return null;
+    return users[0];
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return { id, updateUserDto };
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.findOne(id);
+    if (!user) return null;
+    const users = await this.db
+      .update(schema.users)
+      .set(updateUserDto)
+      .where(eq(schema.users.id, id))
+      .returning(this.fields);
+    if (!users.length) return null;
+    return { user: users[0] };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async delete(id: string) {
+    const user = await this.findOne(id);
+    if (!user) return null;
+    await this.db.delete(schema.users).where(eq(schema.users.id, id));
+    return { user: null };
   }
 }
