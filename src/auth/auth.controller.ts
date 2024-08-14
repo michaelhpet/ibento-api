@@ -4,18 +4,24 @@ import {
   Body,
   HttpException,
   HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { SignupDto } from './dto/signup.dto';
 import { UserService } from '@/user/user.service';
 import { success } from '@/utils';
-import { generateJWT, hashPassword } from '@/utils/functions';
+import { hashPassword } from '@/utils/functions';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+  ) {}
 
+  @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(@Body() dto: LoginDto) {
     const { email, password } = dto;
@@ -28,21 +34,13 @@ export class AuthController {
         HttpStatus.BAD_REQUEST,
       );
     if (!(await bcrypt.compare(password, user.password_hash)))
-      throw new HttpException('Invalid password', HttpStatus.BAD_REQUEST);
-    const token = generateJWT(user);
-    const data = {
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        display_name: user.display_name,
-        avatar_url: user.avatar_url,
-        created_at: user.created_at,
-        updated_at: user.updated_at,
-      },
-    };
+      throw new HttpException('Invalid password', HttpStatus.UNAUTHORIZED);
+    const { password_hash, ...payload } = user;
+    const access_token = await this.jwtService.signAsync({
+      ...payload,
+      password_hash,
+    });
+    const data = { access_token, user: payload };
     return success(data, 'User logged in successfully');
   }
 
