@@ -45,7 +45,7 @@ export const events = pgTable(
     dates: timestamp('dates').array().notNull(),
     times: time('times').array().notNull(),
     visibility: eventVisibility('visibility').default('private'),
-    published: boolean('private').default(true),
+    published: boolean('private').default(false),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
   },

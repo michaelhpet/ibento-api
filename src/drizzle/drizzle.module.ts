@@ -12,7 +12,7 @@ import { DB_CONNECTION } from '@/utils/constants';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         const databaseUrl = configService.get<string>('DATABASE_URL')!;
-        return drizzle(postgres(databaseUrl));
+        return drizzle(postgres(databaseUrl, { prepare: false }));
       },
     },
   ],
