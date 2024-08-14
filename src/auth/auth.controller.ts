@@ -10,7 +10,7 @@ import { LoginDto } from './dto/login.dto';
 import { SignupDto } from './dto/signup.dto';
 import { UserService } from '@/user/user.service';
 import { success } from '@/utils';
-import { hashPassword } from '@/utils/functions';
+import { hashPassword, Public } from '@/utils/functions';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 
@@ -21,6 +21,7 @@ export class AuthController {
     private readonly jwtService: JwtService,
   ) {}
 
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(@Body() dto: LoginDto) {
@@ -44,6 +45,7 @@ export class AuthController {
     return success(data, 'User logged in successfully');
   }
 
+  @Public()
   @Post('signup')
   async signup(@Body() dto: SignupDto) {
     const { email, password, first_name, last_name } = dto;
