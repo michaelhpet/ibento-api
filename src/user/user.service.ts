@@ -1,10 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { eq } from 'drizzle-orm';
+import { count, eq } from 'drizzle-orm';
 import { DB_CONNECTION } from '@/utils/constants';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '@/drizzle/schema';
+import { PaginationDto } from '@/utils/pagination.dto';
+import { getPagination } from '@/utils';
 
 @Injectable()
 export class UserService {
@@ -12,12 +14,34 @@ export class UserService {
     @Inject(DB_CONNECTION) private db: PostgresJsDatabase<typeof schema>,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
-    return { createUserDto };
+  async create(dto: CreateUserDto) {
+    const data = await this.db.insert(schema.users).values(dto).returning({
+      id: schema.users.id,
+      email: schema.users.email,
+      first_name: schema.users.first_name,
+      last_name: schema.users.last_name,
+    });
+    return { user: data[0] };
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, page = 1 } = paginationDto;
+    const offset = (page - 1) * limit;
+    const users = await this.db
+      .select({
+        id: schema.users.id,
+        email: schema.users.email,
+        first_name: schema.users.first_name,
+        last_name: schema.users.last_name,
+      })
+      .from(schema.users)
+      .limit(limit)
+      .offset(offset);
+    const _count = (
+      await this.db.select({ value: count(schema.users.id) }).from(schema.users)
+    )[0].value;
+    const pagination = getPagination(paginationDto, users.length, _count);
+    return { users, pagination };
   }
 
   findOne(id: number) {
