@@ -7,6 +7,7 @@ import { DrizzleModule } from './drizzle/drizzle.module';
 import { AuthGuard } from './auth/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
+import { EventModule } from './event/event.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { APP_GUARD } from '@nestjs/core';
       }),
       global: true,
     },
+    EventModule,
   ],
   controllers: [AppController],
   providers: [

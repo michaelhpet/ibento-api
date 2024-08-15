@@ -43,7 +43,7 @@ export class UserController {
 
   @Delete('me')
   async remove(@Req() req: Request) {
-    const data = await this.userService.delete(req.user.id);
+    const data = await this.userService.remove(req.user.id);
     if (!data)
       throw new HttpException('User does not exist', HttpStatus.NOT_FOUND);
     return success(data, 'User deleted successfully');

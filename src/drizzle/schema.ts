@@ -4,7 +4,6 @@ import {
   pgEnum,
   pgTable,
   primaryKey,
-  time,
   timestamp,
   uuid,
   varchar,
@@ -42,7 +41,6 @@ export const events = pgTable(
     description: varchar('description').notNull(),
     image_url: varchar('image_url'),
     dates: timestamp('dates').array().notNull(),
-    times: time('times').array().notNull(),
     visibility: eventVisibility('visibility').default('private'),
     published: boolean('published').default(false),
     created_at: timestamp('created_at').defaultNow(),
@@ -64,6 +62,8 @@ export const events_guests = pgTable(
     user_id: uuid('guest_id')
       .notNull()
       .references(() => users.id),
+    created_at: timestamp('created_at').defaultNow(),
+    updated_at: timestamp('updated_at').defaultNow(),
   },
   (table) => ({
     primaryKay: primaryKey({ columns: [table.event_id, table.user_id] }),

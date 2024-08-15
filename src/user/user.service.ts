@@ -21,7 +21,8 @@ export class UserService {
   };
 
   constructor(
-    @Inject(DB_CONNECTION) private db: PostgresJsDatabase<typeof schema>,
+    @Inject(DB_CONNECTION)
+    private readonly db: PostgresJsDatabase<typeof schema>,
   ) {}
 
   async create(dto: CreateUserDto) {
@@ -77,7 +78,7 @@ export class UserService {
     return { user: users[0] };
   }
 
-  async delete(id: string) {
+  async remove(id: string) {
     const user = await this.findOne(id);
     if (!user) return null;
     await this.db.delete(schema.users).where(eq(schema.users.id, id));
