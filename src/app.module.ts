@@ -8,6 +8,7 @@ import { AuthGuard } from './auth/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { EventModule } from './event/event.module';
+import { EmailService } from './email/email.service';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { EventModule } from './event/event.module';
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
+    EmailService,
   ],
 })
 export class AppModule {}
