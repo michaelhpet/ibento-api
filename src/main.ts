@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as fs from 'fs';
 
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
@@ -30,7 +29,7 @@ export class AppExceptionFilter implements ExceptionFilter {
 
 async function main() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('/api/v1');
+  app.setGlobalPrefix('/api/v1', { exclude: ['/'] });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -55,14 +54,18 @@ async function main() {
       'REST API server for ibento, an event ticketing platform that lets creators and organisers schedule events and invite local and international guests seamlessly',
     )
     .setVersion('1.0')
+    .addBearerAuth()
+    .addTag('auth')
     .addTag('users')
     .addTag('events')
     .build();
   const document = SwaggerModule.createDocument(app, config, {
     operationIdFactory: (_, methodKey) => methodKey,
   });
-  fs.writeFileSync('openapi.json', JSON.stringify(document));
-  SwaggerModule.setup('/api/v1/docs', app, document);
+  SwaggerModule.setup('/api/v1/docs', app, document, {
+    customSiteTitle: 'ibento API',
+    jsonDocumentUrl: '/api/v1/docs/json',
+  });
 
   await app.listen(8080);
 }

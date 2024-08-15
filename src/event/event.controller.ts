@@ -17,7 +17,9 @@ import { ReadEventsDto } from './dto/read-events.dto';
 import { success } from '@/utils';
 import { Public } from '@/utils/functions';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('events')
 @Controller('events')
 export class EventController {
   constructor(private readonly eventService: EventService) {}

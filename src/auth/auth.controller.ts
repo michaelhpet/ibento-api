@@ -13,7 +13,9 @@ import { success } from '@/utils';
 import { hashPassword, Public } from '@/utils/functions';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -24,8 +26,8 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(@Body() dto: LoginDto) {
-    const { email, password } = dto;
+  async login(@Body() loginDto: LoginDto) {
+    const { email, password } = loginDto;
     const user = await this.userService.findByEmail(email);
     if (!user)
       throw new HttpException('User does not exist', HttpStatus.NOT_FOUND);
@@ -47,8 +49,8 @@ export class AuthController {
 
   @Public()
   @Post('signup')
-  async signup(@Body() dto: SignupDto) {
-    const { email, password, first_name, last_name } = dto;
+  async signup(@Body() signupDto: SignupDto) {
+    const { email, password, first_name, last_name } = signupDto;
     if (await this.userService.findByEmail(email))
       throw new HttpException(
         'User with this email already exists',
