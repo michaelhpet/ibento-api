@@ -43,6 +43,13 @@
       "when": 1723599502954,
       "tag": "0005_natural_old_lace",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1723749541932,
+      "tag": "0006_hot_epoch",
+      "breakpoints": true
     }
   ]
 }

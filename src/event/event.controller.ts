@@ -16,6 +16,7 @@ import { Request } from 'express';
 import { ReadEventsDto } from './dto/read-events.dto';
 import { success } from '@/utils';
 import { Public } from '@/utils/functions';
+import { CreateInvitationDto } from './dto/create-invitation.dto';
 
 @Controller('events')
 export class EventController {
@@ -70,5 +71,25 @@ export class EventController {
   @Delete(':id')
   remove(@Req() req: Request, @Param('id') id: string) {
     return this.eventService.remove(req.user.id, id);
+  }
+
+  @Post(':id/invite')
+  async createInvitation(
+    @Req() req: Request,
+    @Param('id') event_id: string,
+    @Body() createInvitationDto: CreateInvitationDto,
+  ) {
+    const data = await this.eventService.createInvitation(
+      req.user.id,
+      event_id,
+      createInvitationDto,
+    );
+    return success(data, 'Event invitation created successfully');
+  }
+
+  @Get(':id/invite')
+  async findInvitations(@Req() req: Request, @Param('id') event_id: string) {
+    const data = await this.eventService.findInvitations(req.user.id, event_id);
+    return success(data, 'Event invitations retrieved successfully');
   }
 }

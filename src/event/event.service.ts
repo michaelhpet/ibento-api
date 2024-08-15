@@ -7,6 +7,7 @@ import { count, eq } from 'drizzle-orm';
 import { getPagination } from '@/utils';
 import { ReadEventsDto } from './dto/read-events.dto';
 import { DB_CONNECTION } from '@/utils/constants';
+import { CreateInvitationDto } from './dto/create-invitation.dto';
 
 @Injectable()
 export class EventService {
@@ -142,5 +143,63 @@ export class EventService {
     await this.findOne(user_id, event_id);
     await this.db.delete(schema.events).where(eq(schema.events.id, event_id));
     return { event: null };
+  }
+
+  async findInvitations(user_id: string, event_id: string) {
+    const events = await this.db
+      .select({ user_id: schema.events.user_id })
+      .from(schema.events)
+      .where(eq(schema.events.id, event_id));
+    if (!events.length)
+      throw new HttpException('Event does not exist', HttpStatus.NOT_FOUND);
+    const event = events[0];
+    if (event.user_id !== user_id)
+      throw new HttpException(
+        'User not allowed to access this event',
+        HttpStatus.UNAUTHORIZED,
+      );
+    const invitations = await this.db
+      .select({
+        event_id: schema.invitations.event_id,
+        email: schema.invitations.email,
+      })
+      .from(schema.invitations)
+      .where(eq(schema.invitations.event_id, event_id));
+    return { invitations };
+  }
+
+  async createInvitation(
+    user_id: string,
+    event_id: string,
+    createInvitationDto: CreateInvitationDto,
+  ) {
+    const { emails } = createInvitationDto;
+    const events = await this.db
+      .select({ id: schema.events.id, user_id: schema.events.user_id })
+      .from(schema.events)
+      .where(eq(schema.events.id, event_id));
+    if (!events.length)
+      throw new HttpException('Event does not exist', HttpStatus.NOT_FOUND);
+    const event = events[0];
+    if (event.user_id !== user_id)
+      throw new HttpException(
+        'User not allowed to access this event',
+        HttpStatus.UNAUTHORIZED,
+      );
+    const invitations = await this.db
+      .select({
+        event_id: schema.invitations.event_id,
+        email: schema.invitations.email,
+      })
+      .from(schema.invitations)
+      .where(eq(schema.invitations.event_id, event_id));
+    const newInvitationEmails = invitations
+      .filter((i) => !emails.includes(i.email))
+      .map((i) => i.email);
+    if (!newInvitationEmails.length) return { event, invitations: [] };
+    const newInvitations = await this.db
+      .insert(schema.invitations)
+      .values(newInvitationEmails.map((email) => ({ event_id, email })));
+    return { invitations: newInvitations };
   }
 }

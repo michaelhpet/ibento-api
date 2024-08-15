@@ -69,3 +69,11 @@ export const events_guests = pgTable(
     primaryKay: primaryKey({ columns: [table.event_id, table.user_id] }),
   }),
 );
+
+export const invitations = pgTable('invitations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: varchar('email').notNull(),
+  event_id: uuid('event_id').references(() => events.id),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
+});
