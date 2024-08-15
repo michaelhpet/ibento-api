@@ -9,6 +9,8 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as fs from 'fs';
 
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
@@ -46,6 +48,22 @@ async function main() {
     }),
   );
   app.useGlobalFilters(new AppExceptionFilter());
+
+  const config = new DocumentBuilder()
+    .setTitle('ibento API')
+    .setDescription(
+      'REST API server for ibento, an event ticketing platform that lets creators and organisers schedule events and invite local and international guests seamlessly',
+    )
+    .setVersion('1.0')
+    .addTag('users')
+    .addTag('events')
+    .build();
+  const document = SwaggerModule.createDocument(app, config, {
+    operationIdFactory: (_, methodKey) => methodKey,
+  });
+  fs.writeFileSync('openapi.json', JSON.stringify(document));
+  SwaggerModule.setup('/api/v1/docs', app, document);
+
   await app.listen(8080);
 }
 main();
