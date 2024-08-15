@@ -3,17 +3,19 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '@/drizzle/schema';
-import { count, eq } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import { getPagination } from '@/utils';
 import { ReadEventsDto } from './dto/read-events.dto';
 import { DB_CONNECTION } from '@/utils/constants';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class EventService {
   constructor(
     @Inject(DB_CONNECTION)
     private readonly db: PostgresJsDatabase<typeof schema>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async create(user_id: string, createEventDto: CreateEventDto) {
@@ -63,7 +65,7 @@ export class EventService {
     return { events, pagination };
   }
 
-  async findRsvp(user_id: string, readEventsDto: ReadEventsDto) {
+  async findRsvps(user_id: string, readEventsDto: ReadEventsDto) {
     const { limit = 10, page = 1 } = readEventsDto;
     const offset = (page - 1) * limit;
     const events = await this.db
@@ -201,5 +203,53 @@ export class EventService {
       .insert(schema.invitations)
       .values(newInvitationEmails.map((email) => ({ event_id, email })));
     return { invitations: newInvitations };
+  }
+
+  async findTicket(user_id: string, event_id: string) {
+    const rsvps = await this.db
+      .select({ user_id: schema.events_guests.user_id })
+      .from(schema.events_guests)
+      .where(
+        and(
+          eq(schema.events_guests.event_id, event_id),
+          eq(schema.events_guests.user_id, user_id),
+        ),
+      );
+    if (!rsvps.length)
+      throw new HttpException('Event RSVP not created', HttpStatus.NOT_FOUND);
+    const token = await this.jwtService.signAsync({ user_id, event_id });
+    return { token };
+  }
+
+  async verifyTicket(owner_id: string, token: string) {
+    try {
+      const { event_id, user_id } = await this.jwtService.verifyAsync(token);
+      const events = await this.db
+        .select()
+        .from(schema.events)
+        .where(eq(schema.events.id, event_id));
+      const event = events[0] || null;
+      if (!event)
+        throw new HttpException('Event does not exist', HttpStatus.NOT_FOUND);
+      if (event.user_id !== owner_id)
+        throw new HttpException(
+          'User does not have access to this event',
+          HttpStatus.FORBIDDEN,
+        );
+      const users = await this.db
+        .select({
+          id: schema.users.id,
+          first_name: schema.users.first_name,
+          last_name: schema.users.last_name,
+        })
+        .from(schema.users)
+        .where(eq(schema.users.id, user_id));
+      if (!users.length)
+        throw new HttpException('Guest does not exist', HttpStatus.NOT_FOUND);
+      const user = users[0];
+      return { valid: true, user, event };
+    } catch (error) {
+      return { valid: false, event: null, user: null };
+    }
   }
 }

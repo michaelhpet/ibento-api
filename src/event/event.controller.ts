@@ -41,9 +41,9 @@ export class EventController {
     return success(data, 'Events retrieved successfully');
   }
 
-  @Get('rsvp')
+  @Get('rsvps')
   async findRsvp(@Req() req: Request, @Query() readEventsDto: ReadEventsDto) {
-    const data = await this.eventService.findRsvp(req.user.id, readEventsDto);
+    const data = await this.eventService.findRsvps(req.user.id, readEventsDto);
     return success(data, 'Event RSVPs retrieved successfully');
   }
 
@@ -60,17 +60,23 @@ export class EventController {
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Req() req: Request,
     @Param('id') id: string,
     @Body() updateEventDto: UpdateEventDto,
   ) {
-    return this.eventService.update(req.user.id, id, updateEventDto);
+    const data = await this.eventService.update(
+      req.user.id,
+      id,
+      updateEventDto,
+    );
+    return success(data, 'Event updated successfully');
   }
 
   @Delete(':id')
-  remove(@Req() req: Request, @Param('id') id: string) {
-    return this.eventService.remove(req.user.id, id);
+  async remove(@Req() req: Request, @Param('id') id: string) {
+    const data = await this.eventService.remove(req.user.id, id);
+    return success(data, 'Event deleted successfully');
   }
 
   @Post(':id/invite')
@@ -91,5 +97,17 @@ export class EventController {
   async findInvitations(@Req() req: Request, @Param('id') event_id: string) {
     const data = await this.eventService.findInvitations(req.user.id, event_id);
     return success(data, 'Event invitations retrieved successfully');
+  }
+
+  @Get(':id/ticket')
+  async getTicket(@Req() req: Request, @Param('id') event_id: string) {
+    const data = await this.eventService.findTicket(req.user.id, event_id);
+    return success(data, 'Ticket retrieved successfully');
+  }
+
+  @Get('ticket/verify')
+  async verifyTicket(@Req() req: Request, @Query('token') token: string) {
+    const data = await this.eventService.verifyTicket(req.user.id, token);
+    return success(data, 'Event ticket verified successfully');
   }
 }
