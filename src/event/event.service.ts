@@ -21,7 +21,8 @@ export class EventService {
   async create(user_id: string, createEventDto: CreateEventDto) {
     const data = await this.db
       .insert(schema.events)
-      .values({ user_id, ...createEventDto });
+      .values({ user_id, ...createEventDto })
+      .returning();
     return { event: data[0] };
   }
 
@@ -94,10 +95,13 @@ export class EventService {
   }
 
   async createRsvp(user_id: string, event_id: string) {
-    const data = await this.db.insert(schema.events_guests).values({
-      user_id,
-      event_id,
-    });
+    const data = await this.db
+      .insert(schema.events_guests)
+      .values({
+        user_id,
+        event_id,
+      })
+      .returning();
     return { rsvp: data[0] };
   }
 
@@ -137,7 +141,8 @@ export class EventService {
     const data = await this.db
       .update(schema.events)
       .set(updateEventDto)
-      .where(eq(schema.events.id, event_id));
+      .where(eq(schema.events.id, event_id))
+      .returning();
     return { event: data[0] };
   }
 
@@ -201,7 +206,8 @@ export class EventService {
     if (!newInvitationEmails.length) return { event, invitations: [] };
     const newInvitations = await this.db
       .insert(schema.invitations)
-      .values(newInvitationEmails.map((email) => ({ event_id, email })));
+      .values(newInvitationEmails.map((email) => ({ event_id, email })))
+      .returning();
     return { invitations: newInvitations };
   }
 

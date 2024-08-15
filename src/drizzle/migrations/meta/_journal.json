@@ -50,6 +50,13 @@
       "when": 1723749541932,
       "tag": "0006_hot_epoch",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1723756531979,
+      "tag": "0007_abandoned_magneto",
+      "breakpoints": true
     }
   ]
 }

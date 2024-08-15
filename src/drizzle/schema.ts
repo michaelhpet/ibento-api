@@ -40,7 +40,7 @@ export const events = pgTable(
     name: varchar('name').notNull(),
     description: varchar('description').notNull(),
     image_url: varchar('image_url'),
-    dates: timestamp('dates').array().notNull(),
+    dates: timestamp('dates', { mode: 'string' }).array().notNull(),
     visibility: eventVisibility('visibility').default('private'),
     published: boolean('published').default(false),
     created_at: timestamp('created_at').defaultNow(),

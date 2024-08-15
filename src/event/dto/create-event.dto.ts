@@ -23,9 +23,9 @@ export class CreateEventDto {
   image_url: string;
 
   @IsArray()
-  @IsDateString({ strict: true }, { each: true })
   @ArrayMinSize(1)
-  dates: Date[];
+  @IsDateString({ strict: true, strictSeparator: true }, { each: true })
+  dates: string[];
 
   @IsString()
   @IsIn(['public', 'private'])
