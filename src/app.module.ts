@@ -30,12 +30,6 @@ import { EmailService } from './email/email.service';
     EventModule,
   ],
   controllers: [AppController],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
-    EmailService,
-  ],
+  providers: [{ provide: APP_GUARD, useClass: AuthGuard }, EmailService],
 })
 export class AppModule {}

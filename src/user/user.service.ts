@@ -7,9 +7,16 @@ import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '@/drizzle/schema';
 import { PaginationDto } from '@/utils/pagination.dto';
 import { getPagination } from '@/utils';
+import { EmailService } from '@/email/email.service';
 
 @Injectable()
 export class UserService {
+  constructor(
+    @Inject(DB_CONNECTION)
+    private readonly db: PostgresJsDatabase<typeof schema>,
+    private readonly emailService: EmailService,
+  ) {}
+
   fields = {
     id: schema.users.id,
     first_name: schema.users.first_name,
@@ -20,16 +27,15 @@ export class UserService {
     updated_at: schema.users.updated_at,
   };
 
-  constructor(
-    @Inject(DB_CONNECTION)
-    private readonly db: PostgresJsDatabase<typeof schema>,
-  ) {}
-
   async create(dto: CreateUserDto) {
     const data = await this.db
       .insert(schema.users)
       .values(dto)
       .returning(this.fields);
+    this.emailService.mailNewUser(
+      dto.email,
+      `${dto.first_name} ${dto.last_name}`,
+    );
     return { user: data[0] };
   }
 
