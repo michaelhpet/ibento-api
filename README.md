@@ -55,7 +55,6 @@ ibento-api is the REST API server for ibento, a comprehensive event management s
 Ensure you have the following installed:
 
 - Node.js (v20 or higher)
-- Redis (for caching)
 
 ### Steps
 
@@ -76,7 +75,6 @@ Ensure you have the following installed:
 
 - **Database**: Configure your database connection in the `.env` file.
 - **JWT**: Configure JWT secret and expiration in the `.env` file.
-- **Redis**: Ensure Redis is running and configured properly for caching.
 
 ## Running the Application
 
