@@ -6,16 +6,19 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DrizzleModule } from './drizzle/drizzle.module';
 import { AuthGuard } from './auth/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { EventModule } from './event/event.module';
 import { EmailService } from './email/email.service';
+import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
     DrizzleModule,
     AuthModule,
     UserModule,
+    EventModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    CacheModule.register({ ttl: 5000000, isGlobal: true }),
     {
       ...JwtModule.registerAsync({
         inject: [ConfigService],
@@ -27,9 +30,15 @@ import { EmailService } from './email/email.service';
       }),
       global: true,
     },
-    EventModule,
   ],
   controllers: [AppController],
-  providers: [{ provide: APP_GUARD, useClass: AuthGuard }, EmailService],
+  providers: [
+    EmailService,
+    { provide: APP_GUARD, useClass: AuthGuard },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
+    },
+  ],
 })
 export class AppModule {}
