@@ -10,6 +10,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { EventModule } from './event/event.module';
 import { EmailService } from './email/email.service';
 import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
     EventModule,
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.register({ ttl: 5000000, isGlobal: true }),
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 10 }]),
     {
       ...JwtModule.registerAsync({
         inject: [ConfigService],
@@ -35,10 +37,8 @@ import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
   providers: [
     EmailService,
     { provide: APP_GUARD, useClass: AuthGuard },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: CacheInterceptor,
-    },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_INTERCEPTOR, useClass: CacheInterceptor },
   ],
 })
 export class AppModule {}
